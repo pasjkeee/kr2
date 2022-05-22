@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .table {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .row {
+        display: flex;
+    }
+
+    .row button {
+        width: 50px;
+        height: 50px;
+        margin: 5px;
+    }
+</style>
+<body>
+    <h2>Tik Tak Toe</h2>
+    <h3>Start table</h3>
+<div class="table">
+    <div class="row">
+        <button data-x="0" data-y="0"></button>
+        <button data-x="1" data-y="0"></button>
+        <button data-x="2" data-y="0"></button>
+    </div>
+    <div class="row">
+        <button data-x="0" data-y="1"></button>
+        <button data-x="1" data-y="1"></button>
+        <button data-x="2" data-y="1"></button>
+    </div>
+    <div class="row">
+        <button data-x="0" data-y="2"></button>
+        <button data-x="1" data-y="2"></button>
+        <button data-x="2" data-y="2"></button>
+    </div>
+</div>
+        <button id="reset">Reset</button>
+</body>
+<script>
+
+    const btns = document.querySelectorAll(".row button");
+    const header =   document.querySelector("h3");
+    const resetBtn = document.getElementById("reset");
+
+    const updateHeader = (res) => {
+        if (res) {
+            switch (res) {
+                case "oTurn":
+                    header.innerHTML = "Ход ноликов"
+                    break
+                case "xTurn":
+                    header.innerHTML = "Ход крестиков"
+                    break
+                case "oWon":
+                    header.innerHTML = "Нолики победили"
+                    break
+                case "xWon":
+                    header.innerHTML = "Крестики победили"
+                    break
+                case "noWon":
+                    header.innerHTML = "Ничья"
+                    break
+                default:
+                    header.innerHTML = "Клетка занята"
+            }
+        }
+    }
+
+    const updateField = (res) => {
+        if (res) {
+            const flatRes = res.flatMap(r => r);
+            btns.forEach((row, i) => {
+                if (flatRes[i] === 1) {
+                    row.innerHTML = "O"
+                }
+
+                if (flatRes[i] === 2) {
+                    row.innerHTML = "X"
+                }
+
+                if (flatRes[i] === 0) {
+                    row.innerHTML = ""
+                }
+            })
+        }
+    }
+
+    const sendCoords = async (x, y) => {
+        const res = await fetch(`http://localhost:8080/move?x=${y}&y=${x}`)
+        const jsonRes = await res.json();
+        const { response, body } = jsonRes;
+
+        updateHeader(response);
+        updateField(body);
+
+    }
+
+    resetBtn.addEventListener("click", async () => {
+        const res = await fetch(`http://localhost:8080/reset`)
+        const jsonRes = await res.json();
+        const { response, body } = jsonRes;
+
+        updateHeader(response);
+        updateField(body);
+    })
+
+    btns.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            sendCoords(e.target.getAttribute("data-x"), e.target.getAttribute("data-y"))
+        })
+    })
+</script>
+</html>
